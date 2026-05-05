@@ -418,6 +418,11 @@
       <h4>Review Note</h4>
       <p id="dlg-review-note" style="color:var(--red);">—</p>
     </div>
+    <div class="dialog-section" id="dlg-web-section" style="display:none;">
+      <h4>Web Enrichment Signals</h4>
+      <p id="dlg-web-notes" style="color:var(--green);">—</p>
+      <p id="dlg-web-extra" style="font-size:0.8rem;color:var(--gray);margin-top:0.3rem;">—</p>
+    </div>
     <div class="dialog-section">
       <h4>Links</h4>
       <div class="company-links" id="dlg-links">—</div>
@@ -587,6 +592,16 @@ function openDetail(idx) {
   document.getElementById('dlg-evidence').textContent = r.evidence_notes || '—';
   document.getElementById('dlg-linkedin').textContent = r.suggested_linkedin_angle || '—';
   document.getElementById('dlg-titles').textContent = r.suggested_target_titles || '—';
+
+  const webSec = document.getElementById('dlg-web-section');
+  if (r.web_enrichment_notes && r.web_enrichment_bonus > 0) {
+    webSec.style.display = '';
+    document.getElementById('dlg-web-notes').textContent = r.web_enrichment_notes;
+    const extras = [r.mw_scale, r.states_mentioned ? `States: ${r.states_mentioned}` : ''].filter(Boolean).join(' · ');
+    document.getElementById('dlg-web-extra').textContent = extras || '';
+  } else {
+    webSec.style.display = 'none';
+  }
 
   const reviewSec = document.getElementById('dlg-review-section');
   if (r.needs_review && r.review_note) {
