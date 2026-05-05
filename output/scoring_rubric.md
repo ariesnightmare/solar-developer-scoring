@@ -127,12 +127,12 @@ Measures whether the company's stated mission or values align with community imp
 
 | Tier | Score Range | Action |
 |------|-------------|--------|
-| A | 60–100 | Strong fit — prioritize for personalized LinkedIn outreach |
-| B | 40–59 | Moderate fit — review before outreach; may be worth pursuing |
-| C | 20–39 | Weak fit — likely installer or contractor; low priority |
+| A | 50–100 | Strong fit — prioritize for personalized LinkedIn outreach |
+| B | 35–49 | Moderate fit — review before outreach; may be worth pursuing |
+| C | 20–34 | Weak fit — likely installer or contractor; low priority |
 | D | 0–19 | Very poor fit — likely false positive or out of scope |
 
-*Note: Tier A threshold adjusted from 75 (spec default) to 60 based on calibration against source-only evidence. See `output/method_notes.md` Section 7.*
+*Note: Tier A threshold adjusted from 75 (spec default) to 50, and Tier B to 35, based on calibration against source-only evidence. LinkedIn descriptions rarely contain explicit developer/finance language even for legitimate firms. See `output/method_notes.md` Section 7.*
 
 ---
 

@@ -483,9 +483,9 @@ def assess_confidence_and_review(row: dict, scores: dict, total: int) -> tuple[s
 
 
 def assign_tier(total: int) -> str:
-    if total >= 60:
+    if total >= 50:
         return "A"
-    if total >= 40:
+    if total >= 35:
         return "B"
     if total >= 20:
         return "C"
