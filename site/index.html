@@ -605,6 +605,7 @@ function openDetail(idx) {
     ['Stage / scale', r.stage_scale_score, 10],
     ['Geographic relevance', r.geographic_score, 5],
     ['Strategic alignment', r.strategic_alignment_score, 10],
+    ['Ecosystem / influence (bonus)', r.ecosystem_signal_score, 10],
   ];
   grid.innerHTML = cats.map(([label, val, max]) =>
     `<div class="cat-label">${label}</div><div class="cat-val">${val} / ${max}</div>`

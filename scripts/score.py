@@ -89,6 +89,22 @@ P_REPEAT_SCALE = re.compile(
     re.I,
 )
 
+# ECOSYSTEM / INFLUENCE patterns
+P_ECOSYSTEM = re.compile(
+    r"\b(award|award.winning|recognized|named (?:one of|a|among)|honored|"
+    r"featured in|covered by|appeared on|podcast|keynote|speaker|"
+    r"forbes|greentech|pv mag|canary media|utility dive|solar power world|"
+    r"thought leader|published|author|research|white paper|"
+    r"partner(?:ed|ship)? with|collaboration with|"
+    r"department of energy|doe |nrel|usda|hud |epa |"
+    r"seia|solar united|necec|irec|vote solar|clean energy state|"
+    r"national lab|argonne|sandia|lawrence|"
+    r"university|college|academic|institute|"
+    r"since 19[89]\d|since 200\d|since 201[0-5]|founded in 19|founded in 200|"
+    r"decade|20 year|15 year|10 year|over \d{2} year)\b",
+    re.I,
+)
+
 # NEGATIVE / LOW-FIT patterns
 P_ROOFING = re.compile(
     r"\b(roof|roofer|roofing|shingle|gutter|siding|"
@@ -419,6 +435,54 @@ def score_strategic_alignment(row: dict) -> tuple[int, list[str]]:
     return max(0, min(10, score)), notes
 
 
+def score_ecosystem_signal(row: dict) -> tuple[int, list[str]]:
+    """Bonus category: Ecosystem influence / network centrality (0–10)
+    Looks for signals that the company or its people are well-known,
+    well-connected, or influential in the solar/clean energy ecosystem.
+    """
+    desc = row["company_description"]
+    name = row["Name"].strip()
+    notes = []
+    score = 0
+
+    eco_matches = P_ECOSYSTEM.findall(desc)
+
+    # Awards, media, recognition
+    if re.search(r"\b(award.winning|recognized|featured in|keynote|podcast|forbes|"
+                 r"greentech|canary media|utility dive|thought leader|published|white paper)\b", desc, re.I):
+        score += 4
+        notes.append("media/recognition signals")
+
+    # Government or national lab partnerships
+    if re.search(r"\b(department of energy|doe |nrel|usda|hud |epa |national lab|"
+                 r"argonne|sandia|lawrence)\b", desc, re.I):
+        score += 4
+        notes.append("government/national lab partnership")
+
+    # Industry body involvement
+    if re.search(r"\b(seia|solar united|necec|irec|vote solar|clean energy state|"
+                 r"university|college|academic|institute)\b", desc, re.I):
+        score += 3
+        notes.append("industry body or academic involvement")
+
+    # Long track record (established pre-2015)
+    if re.search(r"\b(since 19[89]\d|since 200\d|since 201[0-4]|founded in 19|founded in 200|"
+                 r"over \d{2} year|decade|20 year|15 year)\b", desc, re.I):
+        score += 2
+        notes.append("long track record")
+
+    # Named utility or municipality partnerships
+    if re.search(r"\b(partner(?:ed|ship)? with|collaboration with|"
+                 r"municipal|utility|co-op|cooperative|public power)\b", desc, re.I):
+        score += 2
+        notes.append("named partnerships")
+
+    if not notes:
+        notes.append("no ecosystem signals found")
+
+    return max(0, min(10, score)), notes
+
+
 # ─────────────────────────────────────────────
 # Review / confidence logic
 # ─────────────────────────────────────────────
@@ -601,6 +665,7 @@ def score_row(row_num: int, raw: dict) -> dict:
     ss_score, ss_notes = score_stage_scale(row)
     geo_score, geo_notes = score_geographic(row)
     strat_score, strat_notes = score_strategic_alignment(row)
+    eco_score, eco_notes = score_ecosystem_signal(row)
 
     scores = {
         "business_model": bm_score,
@@ -610,6 +675,7 @@ def score_row(row_num: int, raw: dict) -> dict:
         "stage_scale": ss_score,
         "geographic": geo_score,
         "strategic": strat_score,
+        "ecosystem": eco_score,
     }
     all_notes = {
         "biz": bm_notes,
@@ -619,6 +685,7 @@ def score_row(row_num: int, raw: dict) -> dict:
         "scale": ss_notes,
         "geo": geo_notes,
         "strat": strat_notes,
+        "eco": eco_notes,
     }
 
     total = sum(scores.values())
@@ -649,6 +716,7 @@ def score_row(row_num: int, raw: dict) -> dict:
         "stage_scale_score": ss_score,
         "geographic_score": geo_score,
         "strategic_alignment_score": strat_score,
+        "ecosystem_signal_score": eco_score,
         "total_score": total,
         "priority_tier": tier,
         "confidence_level": confidence,
@@ -692,6 +760,7 @@ SCORED_CSV_COLS = [
     "stage_scale_score",
     "geographic_score",
     "strategic_alignment_score",
+    "ecosystem_signal_score",
     "total_score",
     "priority_tier",
     "confidence_level",
