@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar Developer Priority Review</title>
+  <style>
+    /* ── Reset & base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --yellow:   #f5c518;
+      --green:    #2d7d46;
+      --green-lt: #e6f4ea;
+      --blue:     #1a56a0;
+      --blue-lt:  #e8f0fb;
+      --orange:   #c25c00;
+      --orange-lt:#fff3e8;
+      --red:      #b91c1c;
+      --red-lt:   #fef2f2;
+      --gray:     #6b7280;
+      --gray-lt:  #f3f4f6;
+      --border:   #e5e7eb;
+      --text:     #111827;
+      --radius:   6px;
+      --font:     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: #f9fafb;
+      line-height: 1.5;
+    }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      background: var(--green);
+      color: #fff;
+      padding: 1.25rem 0;
+    }
+    header .inner { display: flex; align-items: center; gap: 1rem; }
+    header h1 { font-size: 1.35rem; font-weight: 700; }
+    header p  { font-size: 0.85rem; opacity: 0.85; margin-top: 0.2rem; }
+
+    .warning-bar {
+      background: #fffbeb;
+      border-bottom: 1px solid #fcd34d;
+      padding: 0.6rem 0;
+      font-size: 0.82rem;
+      text-align: center;
+      color: #92400e;
+    }
+
+    main { padding: 1.5rem 0 3rem; }
+
+    /* ── Summary cards ─────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .card .big  { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+    .card .label{ font-size: 0.8rem; color: var(--gray); margin-top: 0.3rem; }
+    .card.tier-a { border-left: 4px solid var(--green); }
+    .card.tier-b { border-left: 4px solid var(--blue); }
+    .card.tier-c { border-left: 4px solid var(--orange); }
+    .card.tier-d { border-left: 4px solid var(--gray); }
+    .card.review { border-left: 4px solid var(--red); }
+
+    /* ── Controls ───────────────────────────────────────────── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      align-items: center;
+    }
+    .controls input[type="search"] {
+      flex: 1 1 220px;
+      min-width: 200px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+    }
+    .controls select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .controls label { font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
+    .count-badge {
+      margin-left: auto;
+      font-size: 0.82rem;
+      color: var(--gray);
+    }
+
+    /* ── Section headings ───────────────────────────────────── */
+    .section-heading {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    /* ── Table ──────────────────────────────────────────────── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin-bottom: 2.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+    thead th {
+      background: var(--gray-lt);
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    td { padding: 0.55rem 0.75rem; vertical-align: top; }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .tier-A { background: var(--green-lt); color: var(--green); }
+    .tier-B { background: var(--blue-lt);  color: var(--blue); }
+    .tier-C { background: var(--orange-lt);color: var(--orange); }
+    .tier-D { background: var(--gray-lt);  color: var(--gray); }
+
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .score-bar .bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+    .score-num { font-weight: 600; }
+
+    .review-flag {
+      font-size: 0.72rem;
+      color: var(--red);
+      background: var(--red-lt);
+      border-radius: var(--radius);
+      padding: 0.1rem 0.4rem;
+      white-space: nowrap;
+    }
+    .conf-high   { color: var(--green); }
+    .conf-medium { color: var(--orange); }
+    .conf-low    { color: var(--red); }
+
+    .company-name { font-weight: 600; }
+    .company-links { font-size: 0.75rem; margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .company-links a { color: var(--blue); text-decoration: none; }
+    .company-links a:hover { text-decoration: underline; }
+
+    .reason-text { font-size: 0.78rem; color: #374151; max-width: 260px; }
+    .location-text { white-space: nowrap; font-size: 0.8rem; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    /* ── Rubric summary ─────────────────────────────────────── */
+    .rubric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+    .rubric-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+    }
+    .rubric-item h4 { font-size: 0.85rem; font-weight: 600; }
+    .rubric-item .pts { float: right; font-size: 0.8rem; color: var(--gray); }
+    .rubric-item p { font-size: 0.78rem; color: var(--gray); margin-top: 0.3rem; }
+
+    /* ── Detail modal / expandable ───────────────────────────── */
+    .detail-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.72rem;
+      padding: 0.15rem 0.4rem;
+      color: var(--blue);
+    }
+    .detail-btn:hover { background: var(--blue-lt); }
+
+    dialog {
+      max-width: 700px;
+      width: 95%;
+      border: none;
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    dialog::backdrop { background: rgba(0,0,0,0.4); }
+    .dialog-header {
+      background: var(--green);
+      color: #fff;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .dialog-header h3 { font-size: 1.05rem; }
+    .dialog-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .dialog-body { padding: 1.25rem; overflow-y: auto; max-height: 70vh; }
+    .dialog-section { margin-bottom: 1rem; }
+    .dialog-section h4 { font-size: 0.82rem; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.4rem; }
+    .dialog-section p  { font-size: 0.87rem; }
+    .score-breakdown { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 1rem; font-size: 0.85rem; }
+    .score-breakdown .cat-label { }
+    .score-breakdown .cat-val   { text-align: right; font-weight: 600; }
+    .score-breakdown .total-row { border-top: 1px solid var(--border); padding-top: 0.3rem; font-weight: 700; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 0;
+      font-size: 0.78rem;
+      color: var(--gray);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="page-wrap inner">
+    <div>
+      <h1>Solar Developer Priority Review</h1>
+      <p>Fit-based prioritization for climate-finance LinkedIn outreach &mdash; Jackie Logan</p>
+    </div>
+  </div>
+</header>
+
+<div class="warning-bar">
+  &#9888; Human review required before any outreach. Scores are based on source-tab evidence only; no external research was performed.
+</div>
+
+<main class="page-wrap">
+
+  <!-- Summary cards -->
+  <div class="summary-grid" id="summary-cards">
+    <div class="card" id="card-total"><div class="big" id="cnt-total">—</div><div class="label">Total Companies</div></div>
+    <div class="card tier-a"><div class="big" id="cnt-a">—</div><div class="label">Tier A (60+)</div></div>
+    <div class="card tier-b"><div class="big" id="cnt-b">—</div><div class="label">Tier B (40–59)</div></div>
+    <div class="card tier-c"><div class="big" id="cnt-c">—</div><div class="label">Tier C (20–39)</div></div>
+    <div class="card tier-d"><div class="big" id="cnt-d">—</div><div class="label">Tier D (0–19)</div></div>
+    <div class="card review"><div class="big" id="cnt-review">—</div><div class="label">Flagged for Review</div></div>
+  </div>
+
+  <!-- Rubric summary -->
+  <h2 class="section-heading">Scoring Rubric (100 pts total)</h2>
+  <div class="rubric-grid">
+    <div class="rubric-item"><h4>Business model fit <span class="pts">0–25 pts</span></h4><p>Developer profile, project ownership, EPC or community-scale development vs. pure installer or contractor</p></div>
+    <div class="rubric-item"><h4>Community solar relevance <span class="pts">0–20 pts</span></h4><p>Explicit community solar, shared solar, subscriber-based model, or community-scale distributed generation</p></div>
+    <div class="rubric-item"><h4>LMI / equity alignment <span class="pts">0–15 pts</span></h4><p>Low-to-moderate income focus, affordable housing solar, energy burden, environmental justice language</p></div>
+    <div class="rubric-item"><h4>Capital need / financing <span class="pts">0–15 pts</span></h4><p>Project finance, tax equity, capital stack, growth capital, or evidence of pipeline-scale financing needs</p></div>
+    <div class="rubric-item"><h4>Stage / scale / repeatability <span class="pts">0–10 pts</span></h4><p>Multi-project footprint, recurring development activity, size band supporting developer profile</p></div>
+    <div class="rubric-item"><h4>Geographic relevance <span class="pts">0–5 pts</span></h4><p>Active in high-opportunity community solar states (NY, IL, MD, MN, NJ, CO, MA, CA, ME, OR, VA, etc.)</p></div>
+    <div class="rubric-item"><h4>Strategic / mission alignment <span class="pts">0–10 pts</span></h4><p>Community impact, resilience, affordability, energy access, local economic development beyond generic marketing</p></div>
+  </div>
+
+  <!-- Controls -->
+  <h2 class="section-heading">All Companies</h2>
+  <div class="controls">
+    <input type="search" id="search-box" placeholder="Search company name, location, reason…" />
+    <select id="tier-filter">
+      <option value="">All tiers</option>
+      <option value="A">Tier A only</option>
+      <option value="B">Tier B only</option>
+      <option value="C">Tier C only</option>
+      <option value="D">Tier D only</option>
+    </select>
+    <select id="review-filter">
+      <option value="">All rows</option>
+      <option value="review">Needs review</option>
+      <option value="no-review">No review flag</option>
+    </select>
+    <label><input type="checkbox" id="top50-only" /> Top 50 only</label>
+    <span class="count-badge" id="row-count">Loading…</span>
+  </div>
+
+  <div class="table-wrap">
+    <table id="main-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Company</th>
+          <th>Score</th>
+          <th>Tier</th>
+          <th>Confidence</th>
+          <th>Location</th>
+          <th>Size</th>
+          <th>Type</th>
+          <th>Priority Reason</th>
+          <th>Review</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="main-tbody">
+        <tr><td colspan="11" class="empty-state">Loading data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Review queue section -->
+  <h2 class="section-heading">Review Queue</h2>
+  <p style="font-size:0.85rem;color:var(--gray);margin-bottom:1rem;">
+    These rows were flagged for human review before outreach. Reasons include: possible false positives, residential/contractor profile, very small company, near tier boundary, duplicate domain, or thin evidence.
+  </p>
+  <div class="table-wrap">
+    <table id="review-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Company</th>
+          <th>Score</th>
+          <th>Tier</th>
+          <th>Review Note</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="review-tbody">
+        <tr><td colspan="6" class="empty-state">Loading data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  <div class="page-wrap">
+    Solar Developer Scoring &mdash; Evidence-based fit model using source-tab fields only. No external research performed. All outreach requires human review.
+  </div>
+</footer>
+
+<!-- Detail dialog -->
+<dialog id="detail-dialog">
+  <div class="dialog-header">
+    <div>
+      <h3 id="dlg-name">—</h3>
+      <div style="font-size:0.82rem;opacity:0.85;margin-top:0.2rem;" id="dlg-location">—</div>
+    </div>
+    <button class="dialog-close" id="dlg-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="dialog-body">
+    <div class="dialog-section">
+      <h4>Score Breakdown</h4>
+      <div class="score-breakdown" id="dlg-score-grid">—</div>
+    </div>
+    <div class="dialog-section">
+      <h4>Priority Reason</h4>
+      <p id="dlg-reason">—</p>
+    </div>
+    <div class="dialog-section">
+      <h4>Evidence Notes</h4>
+      <p id="dlg-evidence">—</p>
+    </div>
+    <div class="dialog-section">
+      <h4>Suggested LinkedIn Angle</h4>
+      <p id="dlg-linkedin">—</p>
+    </div>
+    <div class="dialog-section">
+      <h4>Suggested Target Titles</h4>
+      <p id="dlg-titles">—</p>
+    </div>
+    <div class="dialog-section" id="dlg-review-section" style="display:none;">
+      <h4>Review Note</h4>
+      <p id="dlg-review-note" style="color:var(--red);">—</p>
+    </div>
+    <div class="dialog-section">
+      <h4>Links</h4>
+      <div class="company-links" id="dlg-links">—</div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+// ── Data loading ─────────────────────────────────────────────
+let ALL_DATA = [];
+let filteredData = [];
+
+async function loadData() {
+  try {
+    const resp = await fetch('data/developers_scored.json');
+    if (!resp.ok) throw new Error('fetch failed');
+    ALL_DATA = await resp.json();
+    init();
+  } catch (e) {
+    document.getElementById('main-tbody').innerHTML =
+      `<tr><td colspan="11" class="empty-state">Error loading data: ${e.message}</td></tr>`;
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────
+function init() {
+  updateSummaryCards();
+  attachControls();
+  renderMainTable(ALL_DATA);
+  renderReviewTable(ALL_DATA.filter(r => r.needs_review));
+}
+
+function updateSummaryCards() {
+  const tiers = { A:0, B:0, C:0, D:0 };
+  let review = 0;
+  ALL_DATA.forEach(r => {
+    tiers[r.priority_tier] = (tiers[r.priority_tier] || 0) + 1;
+    if (r.needs_review) review++;
+  });
+  document.getElementById('cnt-total').textContent = ALL_DATA.length;
+  document.getElementById('cnt-a').textContent = tiers.A;
+  document.getElementById('cnt-b').textContent = tiers.B;
+  document.getElementById('cnt-c').textContent = tiers.C;
+  document.getElementById('cnt-d').textContent = tiers.D;
+  document.getElementById('cnt-review').textContent = review;
+}
+
+// ── Filtering ────────────────────────────────────────────────
+function getFiltered() {
+  const q      = document.getElementById('search-box').value.toLowerCase().trim();
+  const tier   = document.getElementById('tier-filter').value;
+  const rev    = document.getElementById('review-filter').value;
+  const top50  = document.getElementById('top50-only').checked;
+
+  let data = ALL_DATA;
+  if (top50) data = data.slice(0, 50);
+
+  return data.filter(r => {
+    if (tier && r.priority_tier !== tier) return false;
+    if (rev === 'review' && !r.needs_review) return false;
+    if (rev === 'no-review' && r.needs_review) return false;
+    if (q) {
+      const haystack = [r.company_name, r.location, r.priority_reason,
+                        r.primary_industry, r.company_size].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function attachControls() {
+  ['search-box','tier-filter','review-filter','top50-only'].forEach(id => {
+    document.getElementById(id).addEventListener('input', refreshTable);
+  });
+}
+
+function refreshTable() {
+  filteredData = getFiltered();
+  renderMainTable(filteredData);
+}
+
+// ── Rendering ────────────────────────────────────────────────
+function scoreBar(score) {
+  const pct = Math.round((score / 100) * 140);
+  const color = score >= 60 ? 'var(--green)' : score >= 40 ? 'var(--blue)' : score >= 20 ? 'var(--orange)' : 'var(--gray)';
+  return `<div class="score-bar">
+    <span class="score-num">${score}</span>
+    <div class="bar" style="width:${pct}px;background:${color};"></div>
+  </div>`;
+}
+
+function tierBadge(tier) {
+  return `<span class="tier-badge tier-${tier}">Tier ${tier}</span>`;
+}
+
+function confSpan(c) {
+  return `<span class="conf-${c}">${c}</span>`;
+}
+
+function linkCell(r) {
+  const parts = [];
+  if (r.website) parts.push(`<a href="https://${r.website.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">web</a>`);
+  if (r.linkedin_url) parts.push(`<a href="${r.linkedin_url}" target="_blank" rel="noopener">li</a>`);
+  return parts.join(' ');
+}
+
+function detailBtn(idx) {
+  return `<button class="detail-btn" onclick="openDetail(${idx})">details</button>`;
+}
+
+function renderMainTable(data) {
+  document.getElementById('row-count').textContent = `${data.length} companies`;
+  const tbody = document.getElementById('main-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No results match the current filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((r, i) => {
+    const globalIdx = ALL_DATA.indexOf(r);
+    return `<tr>
+      <td style="color:var(--gray);font-size:0.78rem;">${r.source_row_id}</td>
+      <td>
+        <div class="company-name">${esc(r.company_name)}</div>
+        <div class="company-links">${linkCell(r)}</div>
+      </td>
+      <td>${scoreBar(r.total_score)}</td>
+      <td>${tierBadge(r.priority_tier)}</td>
+      <td>${confSpan(r.confidence_level)}</td>
+      <td class="location-text">${esc(r.location)}</td>
+      <td style="font-size:0.78rem;white-space:nowrap;">${esc(r.company_size)}</td>
+      <td style="font-size:0.78rem;">${esc(r.company_type)}</td>
+      <td><div class="reason-text">${esc(r.priority_reason)}</div></td>
+      <td>${r.needs_review ? '<span class="review-flag">&#9873; review</span>' : ''}</td>
+      <td>${detailBtn(globalIdx)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderReviewTable(data) {
+  const tbody = document.getElementById('review-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No review-flagged rows.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((r, i) => {
+    const globalIdx = ALL_DATA.indexOf(r);
+    return `<tr>
+      <td style="color:var(--gray);font-size:0.78rem;">${r.source_row_id}</td>
+      <td>
+        <div class="company-name">${esc(r.company_name)}</div>
+        <div class="company-links">${linkCell(r)}</div>
+      </td>
+      <td>${scoreBar(r.total_score)}</td>
+      <td>${tierBadge(r.priority_tier)}</td>
+      <td style="font-size:0.78rem;color:var(--red);max-width:320px;">${esc(r.review_note || '')}</td>
+      <td>${detailBtn(globalIdx)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Detail dialog ────────────────────────────────────────────
+function openDetail(idx) {
+  const r = ALL_DATA[idx];
+  document.getElementById('dlg-name').textContent = r.company_name;
+  document.getElementById('dlg-location').textContent = [r.location, r.primary_industry, r.company_size].filter(Boolean).join(' · ');
+  document.getElementById('dlg-reason').textContent = r.priority_reason || '—';
+  document.getElementById('dlg-evidence').textContent = r.evidence_notes || '—';
+  document.getElementById('dlg-linkedin').textContent = r.suggested_linkedin_angle || '—';
+  document.getElementById('dlg-titles').textContent = r.suggested_target_titles || '—';
+
+  const reviewSec = document.getElementById('dlg-review-section');
+  if (r.needs_review && r.review_note) {
+    reviewSec.style.display = '';
+    document.getElementById('dlg-review-note').textContent = r.review_note;
+  } else {
+    reviewSec.style.display = 'none';
+  }
+
+  const grid = document.getElementById('dlg-score-grid');
+  const cats = [
+    ['Business model fit', r.business_model_fit_score, 25],
+    ['Community solar', r.community_solar_score, 20],
+    ['LMI / equity alignment', r.lmi_alignment_score, 15],
+    ['Capital need / financing', r.capital_need_score, 15],
+    ['Stage / scale', r.stage_scale_score, 10],
+    ['Geographic relevance', r.geographic_score, 5],
+    ['Strategic alignment', r.strategic_alignment_score, 10],
+  ];
+  grid.innerHTML = cats.map(([label, val, max]) =>
+    `<div class="cat-label">${label}</div><div class="cat-val">${val} / ${max}</div>`
+  ).join('') +
+  `<div class="cat-label total-row">Total</div><div class="cat-val total-row">${r.total_score} / 100 · ${tierBadge(r.priority_tier)}</div>`;
+
+  const links = [];
+  if (r.website) links.push(`<a href="https://${r.website.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">${r.website}</a>`);
+  if (r.linkedin_url) links.push(`<a href="${r.linkedin_url}" target="_blank" rel="noopener">LinkedIn</a>`);
+  if (r.source_page_url) links.push(`<a href="${r.source_page_url}" target="_blank" rel="noopener">Source page</a>`);
+  document.getElementById('dlg-links').innerHTML = links.join(' &nbsp;·&nbsp; ') || '—';
+
+  document.getElementById('detail-dialog').showModal();
+}
+
+document.getElementById('dlg-close').addEventListener('click', () => {
+  document.getElementById('detail-dialog').close();
+});
+document.getElementById('detail-dialog').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.close();
+});
+
+// ── Utilities ────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── Boot ─────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
