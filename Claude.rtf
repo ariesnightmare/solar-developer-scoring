@@ -1,0 +1,493 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # Project: Solar Developer Scoring + GitHub Pages Review Site\
+\
+## Objective\
+\
+Build a scoring model and ranking rubric for the spreadsheet tab named exactly:\
+\
+`Solar Developers No Referrals`\
+\
+The goal is to prioritize solar companies for personalized LinkedIn outreach by Jackie Logan.\
+\
+This project must:\
+1. read the tab `Solar Developers No Referrals`,\
+2. use the actual source columns from that tab,\
+3. create a practical scoring rubric,\
+4. score and rank the companies,\
+5. output clean ranked files,\
+6. build a simple static review site,\
+7. use Git throughout,\
+8. prepare the project for GitHub Pages deployment.\
+\
+## GitHub / Git / Pages requirement\
+\
+This project must be structured for GitHub from the start.\
+\
+Required:\
+- use Git for version control,\
+- keep all artifacts in a clean repo structure,\
+- create a static HTML review site in `site/`,\
+- prepare the site for GitHub Pages deployment,\
+- add a GitHub Actions workflow to publish the `site/` directory,\
+- update README.md with setup and deployment instructions.\
+\
+Preferred implementation:\
+- static HTML\
+- simple CSS\
+- vanilla JavaScript\
+- no backend\
+- no heavy framework unless absolutely necessary\
+\
+## Required repo structure\
+\
+Use or create:\
+\
+- `input/`\
+- `output/`\
+- `site/`\
+- `site/data/`\
+- `scripts/`\
+- `.github/workflows/`\
+- `CLAUDE.md`\
+- `README.md`\
+- `.gitignore`\
+\
+## Expected input\
+\
+A spreadsheet workbook should be in `input/`.\
+\
+Use the worksheet named exactly:\
+\
+`Solar Developers No Referrals`\
+\
+Do not use other tabs for scoring unless this tab does not exist.\
+\
+## Exact source columns from the target tab\
+\
+The target tab includes these source headers:\
+\
+- `Status`\
+- `Find companies`\
+- `Name`\
+- `Description`\
+- `Primary Industry`\
+- `Size`\
+- `Type`\
+- `Location`\
+- `Country`\
+- `Domain`\
+- `LinkedIn URL`\
+- `Solar Developer True Or_False`\
+- `Contains Relevant Keywords`\
+- `Link Of_Page`\
+- `Utility_Check`\
+- `Residential Mention`\
+- `Find warm intros to company`\
+- `Connection Strength Normalized`\
+- `Connector Overlap`\
+- `Internal Connector Owner`\
+- `Name of Person Connected`\
+- `Linkedin Url of Connector`\
+- `Work Email`\
+- `Connector Current Company Name`\
+- `Connector Current Title`\
+- `Send table data`\
+- `Referral Request`\
+- `Details`\
+\
+You must preserve these exact source column names in documentation.\
+\
+## Required source-to-normalized mapping\
+\
+Create a normalized working schema based on the real sheet columns.\
+\
+Map source fields as follows:\
+\
+- `source_row_id` = original row number from the source tab\
+- `company_name` = `Name`\
+- `company_description` = `Description`\
+- `primary_industry` = `Primary Industry`\
+- `company_size` = `Size`\
+- `company_type` = `Type`\
+- `location` = `Location`\
+- `country` = `Country`\
+- `website` = `Domain`\
+- `linkedin_url` = `LinkedIn URL`\
+- `source_page_url` = `Link Of_Page`\
+- `solar_developer_flag` = `Solar Developer True Or_False`\
+- `keyword_flag` = `Contains Relevant Keywords`\
+- `utility_check` = `Utility_Check`\
+- `residential_mention` = `Residential Mention`\
+- `warm_intro_status` = `Find warm intros to company`\
+- `connection_strength_normalized` = `Connection Strength Normalized`\
+- `connector_overlap` = `Connector Overlap`\
+- `internal_connector_owner` = `Internal Connector Owner`\
+- `name_of_person_connected` = `Name of Person Connected`\
+- `linkedin_url_of_connector` = `Linkedin Url of Connector`\
+- `work_email` = `Work Email`\
+- `connector_current_company_name` = `Connector Current Company Name`\
+- `connector_current_title` = `Connector Current Title`\
+- `send_table_data_status` = `Send table data`\
+- `referral_request` = `Referral Request`\
+- `details` = `Details`\
+\
+Document this mapping in `output/method_notes.md`.\
+\
+## Which fields matter for scoring\
+\
+Use these fields as the main scoring inputs:\
+- `Name`\
+- `Description`\
+- `Primary Industry`\
+- `Size`\
+- `Type`\
+- `Location`\
+- `Country`\
+- `Domain`\
+- `LinkedIn URL`\
+- `Link Of_Page`\
+- `Solar Developer True Or_False`\
+- `Contains Relevant Keywords`\
+- `Utility_Check`\
+- `Residential Mention`\
+\
+Use these only as optional metadata or review context:\
+- `Find warm intros to company`\
+- `Connection Strength Normalized`\
+- `Connector Overlap`\
+- `Internal Connector Owner`\
+- `Name of Person Connected`\
+- `Linkedin Url of Connector`\
+- `Work Email`\
+- `Connector Current Company Name`\
+- `Connector Current Title`\
+- `Send table data`\
+- `Referral Request`\
+- `Details`\
+\
+Do not let warm-intro fields drive fit scoring.\
+This is a company-fit model, not a relationship-score model.\
+\
+## Initial data cleaning rules\
+\
+Before scoring:\
+1. read the target tab,\
+2. trim whitespace from headers and values,\
+3. preserve original raw values where practical,\
+4. normalize boolean-style fields like:\
+   - `Solar Developer True Or_False`\
+   - `Contains Relevant Keywords`\
+   - `Utility_Check`\
+   - `Residential Mention`\
+5. normalize URLs in:\
+   - `Domain`\
+   - `LinkedIn URL`\
+   - `Link Of_Page`\
+6. create a stable `source_row_id`,\
+7. identify obvious non-solar or bad-fit rows for review.\
+\
+Important:\
+The current sheet appears to contain false positives.\
+For example, rows may exist that are not true solar developers even if `Solar Developer True Or_False` says `TRUE`.\
+Treat source flags as hints, not truth. Use public evidence and source descriptions to validate. \
+\
+## Business purpose\
+\
+We are prioritizing solar companies for personalized LinkedIn outreach.\
+\
+The goal is to identify the highest-fit companies for climate-finance outreach.\
+\
+This is not a broad list-building exercise.\
+This is not engagement scoring.\
+This is not a referral scoring project.\
+\
+We need a fit-based prioritization model for which companies Jackie should prioritize.\
+\
+## Highest-fit signals\
+\
+Score companies higher when there is evidence of:\
+- community solar\
+- distributed generation\
+- community-scale development\
+- low-to-moderate income or underserved-community focus\
+- affordability, resilience, or community-benefit language\
+- project development rather than pure installation\
+- visible financing relevance\
+- active project pipeline or repeatability\
+- mission alignment with local impact and access\
+\
+## Lower-fit signals\
+\
+Score companies lower when there is evidence of:\
+- pure residential installer\
+- pure roofer / HVAC / contractor with solar as a side service\
+- no meaningful development angle\
+- utility-scale only with no community relevance\
+- weak or generic sustainability language only\
+- minimal evidence\
+- likely false positive / not actually a relevant solar developer\
+\
+## Hard evidence rule\
+\
+Use only publicly supported evidence.\
+\
+Do not hallucinate.\
+Do not invent facts.\
+If evidence is weak, score conservatively and mark for review.\
+\
+Use research sources in this order:\
+1. source tab fields\
+2. company website\
+3. LinkedIn company page\
+4. relevant public company pages such as About, Projects, Markets, News, Team, Portfolio, or Impact pages\
+\
+## Scoring model requirements\
+\
+Create a weighted point-based fit scoring model with a total possible score of 100.\
+\
+Required categories:\
+\
+1. Business model fit (0-25)\
+2. Community solar / community-scale relevance (0-20)\
+3. LMI / underserved-community alignment (0-15)\
+4. Capital need / financing relevance (0-15)\
+5. Stage / scale / repeatability (0-10)\
+6. Geographic relevance (0-5)\
+7. Strategic / mission alignment (0-10)\
+\
+Use integer scores only.\
+\
+### Scoring guidance by category\
+\
+#### 1. Business model fit (0-25)\
+High score:\
+- clear developer profile\
+- project development or ownership angle\
+- commercial, distributed-generation, or community-scale development\
+Medium score:\
+- mixed installer + developer signals\
+- commercial focus with some project complexity\
+Low score:\
+- pure installer\
+- pure residential company\
+- roofing/HVAC/electrical contractor with solar bolt-on\
+- obvious non-fit false positive\
+\
+#### 2. Community solar / community-scale relevance (0-20)\
+High score:\
+- explicit community solar\
+- shared solar\
+- subscriber-based or community-focused project model\
+- community-scale solar language\
+Medium score:\
+- commercial/distributed generation with adjacent community relevance\
+Low score:\
+- no evidence\
+\
+#### 3. LMI / underserved-community alignment (0-15)\
+High score:\
+- explicit LMI\
+- underserved communities\
+- affordable housing\
+- bill savings for vulnerable groups\
+- energy burden / equity / EJ language\
+Medium score:\
+- affordability or local-impact language without explicit LMI mention\
+Low score:\
+- no evidence\
+\
+#### 4. Capital need / financing relevance (0-15)\
+High score:\
+- explicit references to project finance, tax equity, debt, capital stack, growth capital, pipeline expansion, or large recurring project needs\
+Medium score:\
+- signs of repeat projects that imply financing relevance\
+Low score:\
+- one-off installer model, no financing relevance\
+\
+#### 5. Stage / scale / repeatability (0-10)\
+High score:\
+- enough scale or repeatability to justify outreach\
+- multi-project footprint\
+- recurring development activity\
+Medium score:\
+- some evidence of scale\
+Low score:\
+- tiny local installer with one-off work only\
+\
+#### 6. Geographic relevance (0-5)\
+High score:\
+- active in markets that are useful for distributed or community solar opportunity\
+Medium score:\
+- geography plausible but not especially strategic\
+Low score:\
+- geography unclear or less relevant\
+\
+#### 7. Strategic / mission alignment (0-10)\
+High score:\
+- community impact\
+- resilience\
+- affordability\
+- local economic development\
+- access\
+Medium score:\
+- some mission language beyond generic sustainability\
+Low score:\
+- generic marketing copy only\
+\
+## Source flags as modifiers, not truth\
+\
+Use these source columns as soft signals, not final truth:\
+- `Solar Developer True Or_False`\
+- `Contains Relevant Keywords`\
+- `Utility_Check`\
+- `Residential Mention`\
+\
+Interpretation:\
+- `Residential Mention = TRUE` should usually reduce fit unless there is also strong evidence of developer, commercial, or community-scale relevance.\
+- `Utility_Check = TRUE` should trigger review because utility-like firms may not be the right fit.\
+- `Solar Developer True Or_False = TRUE` should not override contradictory evidence.\
+- `Contains Relevant Keywords = TRUE` should not be treated as proof of fit.\
+\
+## Output files\
+\
+Create:\
+\
+- `output/source_inspection.md`\
+- `output/scoring_rubric.md`\
+- `output/method_notes.md`\
+- `output/developers_scored.csv`\
+- `output/top_50_priority.csv`\
+- `output/review_queue.csv`\
+- `output/developers_scored.json`\
+\
+## Required output columns for developers_scored.csv\
+\
+Include:\
+- `source_row_id`\
+- `company_name`\
+- `website`\
+- `linkedin_url`\
+- `location`\
+- `primary_industry`\
+- `company_size`\
+- `company_type`\
+- `solar_developer_flag`\
+- `keyword_flag`\
+- `utility_check`\
+- `residential_mention`\
+- `business_model_fit_score`\
+- `community_solar_score`\
+- `lmi_alignment_score`\
+- `capital_need_score`\
+- `stage_scale_score`\
+- `geographic_score`\
+- `strategic_alignment_score`\
+- `total_score`\
+- `priority_tier`\
+- `confidence_level`\
+- `needs_review`\
+- `priority_reason`\
+- `evidence_notes`\
+- `suggested_linkedin_angle`\
+- `suggested_target_titles`\
+\
+## Tier definitions\
+\
+Default:\
+- Tier A = 75-100\
+- Tier B = 50-74\
+- Tier C = 25-49\
+- Tier D = 0-24\
+\
+If you adjust thresholds after looking at the actual score spread, document the reason.\
+\
+## Review queue rules\
+\
+Put rows into `output/review_queue.csv` when:\
+- confidence is low\
+- the row may be a false positive\
+- the company looks primarily residential or contractor-like\
+- the website is broken or unclear\
+- evidence conflicts\
+- the fit is near a threshold and unclear\
+\
+Include a `review_note` field that explains why human review is needed.\
+\
+## Sample-first calibration\
+\
+Before full scoring:\
+1. inspect the sheet,\
+2. create the rubric,\
+3. score about 25 rows,\
+4. check if obviously residential installers and contractor-type companies are being over-scored,\
+5. adjust conservatively,\
+6. document calibration in `output/method_notes.md`.\
+\
+## Static site requirements\
+\
+Build a static GitHub Pages-friendly site in `site/`.\
+\
+Required files:\
+- `site/index.html`\
+- `site/data/developers_scored.json`\
+\
+The site should include:\
+- title and short description\
+- summary of the rubric\
+- counts by priority tier\
+- top 50 table\
+- review queue section\
+- note about human review before outreach\
+\
+If practical, add:\
+- search by company name\
+- filter by tier\
+- filter by `needs_review`\
+\
+Use simple HTML, CSS, and vanilla JS.\
+No backend.\
+\
+## GitHub Pages workflow\
+\
+Create:\
+- `.github/workflows/deploy-pages.yml`\
+\
+Use a standard GitHub Pages workflow that publishes the `site/` directory.\
+\
+## README requirements\
+\
+Update `README.md` with:\
+- project purpose\
+- expected input file location\
+- target tab name\
+- how the scoring model works\
+- what outputs are produced\
+- how to rerun the workflow\
+- how GitHub Pages deployment works\
+\
+## Git commit requirements\
+\
+Make logical Git commits at milestones:\
+- source inspection\
+- rubric creation\
+- sample scoring calibration\
+- full scoring outputs\
+- static site generation\
+- GitHub Pages workflow setup\
+- README completion\
+\
+## Final instruction\
+\
+Do the work directly.\
+Use the exact source columns listed above.\
+Use the tab `Solar Developers No Referrals`.\
+Build the rubric and score the file.\
+Prepare the project for GitHub and GitHub Pages.\
+Do not stop after analysis.\
+Do not ask clarifying questions unless the input workbook is unreadable.}
